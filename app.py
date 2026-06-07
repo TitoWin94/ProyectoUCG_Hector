@@ -4,8 +4,6 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import matplotlib.pyplot as plt
-import seaborn as sns
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, confusion_matrix
@@ -107,6 +105,23 @@ with st.sidebar:
 def load_data(uploaded_file=None):
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
+        # Normalizar nombres de columnas: quitar espacios y estandarizar
+        df.columns = df.columns.str.strip()
+        rename_map = {}
+        for col in df.columns:
+            if col.strip().lower() == 'time':
+                rename_map[col] = 'Time'
+            elif col.strip().lower() == 'amount':
+                rename_map[col] = 'Amount'
+            elif col.strip().lower() == 'class':
+                rename_map[col] = 'Class'
+        df = df.rename(columns=rename_map)
+        # Validar columnas requeridas
+        required = ['Time', 'Amount', 'Class']
+        missing = [c for c in required if c not in df.columns]
+        if missing:
+            st.error(f"El dataset no tiene las columnas requeridas: {missing}. Columnas encontradas: {list(df.columns)}")
+            st.stop()
     else:
         # Synthetic demo data that mimics the real dataset structure
         np.random.seed(42)
@@ -580,5 +595,3 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
-
-
